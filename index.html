@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<link rel="stylesheet" href="css/style.css" type="text/css">
+<script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/script.js"></script>
+</head>
+<body>
+
+<article>
+
+	<header>
+	
+		<h1>Foxkeh Chat!</h1>
+	
+	</header>
+	
+	<form id="config" action="chat.html">
+		<section>
+			<h2>You</h2>
+			
+			<ul>
+				<li>
+					<label>Nickname</label>
+					<input id="nickname" name="nickname" type="text" placeholder="foxkeh" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$" required>
+				</li>
+				<li>
+					<label>Username</label>
+					<input id="username" name="username" type="text" placeholder="foxkeh" pattern="^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$" required>
+				</li>
+			</ul>
+			
+		</section>
+		
+		<section>
+			<h2>Server</h2>
+			
+			<ul>
+				<li>
+					<label>Name</label>
+					<input id="name" name="name" type="text" value="Freenode" required>
+				</li>
+				<li>
+					<label>Address</label>
+					<input id="host" name="host" type="text" value="chat.freenode.net" pattern="^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,6}$" required>
+				</li>
+				<li>
+					<label>Port</label>
+					<input id="port" name="port" type="text" value="6667" pattern="[1-9][0-9]*" required>
+				</li>
+				<li>
+					<label>Channels</label>
+					<textarea id="ch" name="ch" type="text" placeholder="#foxkehchat"></textarea>
+				</li>
+			</ul>
+		
+		</section>
+	
+		<footer>
+			
+			<p><button id="connect">Connect</button></p>
+			
+		</footer>
+	</form>
+	
+	<section id="about">
+		<h2>About</h2>
+		<ul>
+			<li>Foxkeh Chat 0.1beta by &copy; SakaiYuya</li>
+			<li>&quot;Foxkeh&quot; &copy; 2006 Mozilla Japan</li>
+		</ul>
+	</section>
+
+</article>
+
+</body>
+</html>
