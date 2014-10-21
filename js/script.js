@@ -80,17 +80,14 @@ function textEncode( text, codetype ){
 jQuery.noConflict();
 (function($) {
 	
-	/**
-	 * バリデーションを行う
-	 */
-	function valid( format ){
-	}
-	
 	window.addEventListener('DOMContentLoaded', function( ) {
 	
 		// YOU
 		if( storageGet('nickname') ){
 			$('#nickname').val( storageGet('nickname') );
+		} else {
+			alert('No nickname');
+			return false;
 		}
 		if( storageGet('username') ){
 			$('#username').val( storageGet('username') );
