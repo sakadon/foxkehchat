@@ -85,9 +85,6 @@ jQuery.noConflict();
 		// YOU
 		if( storageGet('nickname') ){
 			$('#nickname').val( storageGet('nickname') );
-		} else {
-			alert('No nickname');
-			return false;
 		}
 		if( storageGet('username') ){
 			$('#username').val( storageGet('username') );
@@ -110,6 +107,17 @@ jQuery.noConflict();
 
 		/// push Connect
 		$('#connect').on('click', function(){
+			
+			//YOU
+			if( $('#nickname').val() == "" ){
+				alert('No nickname');
+				return false;
+			}
+			if( $('#username').val() == "" ){
+				alert('No username');
+				return false;
+			}
+			
 			// YOU
 			storageSet( "nickname", $('#nickname').val() );
 			storageSet( "username", $('#username').val() );

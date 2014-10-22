@@ -14,13 +14,13 @@ jQuery.noConflict();
 		// id attr value is change: id -> count number "i".
 		//var id = ch.replace(/#/g,'');
 		
-		var say = '<p class="say"><input type="text" placeholder="Wow"></p>';
-		
 		// backlog id attr value is backlog
 		if( ch == 'backlog' ){
 			i = 'backlog';
 			say = '';
 		}
+		
+		var say = '<p class="say"><input id="'+i+'" type="text" placeholder="Wow" onkyedown="_sayKeydown(e)"></p>';
 		
 		var html = '\
 		<section id="'+i+'">\
@@ -89,6 +89,7 @@ jQuery.noConflict();
 		var name = storageGet( 'name' );
 		var host = storageGet( 'host' );
 		var port = storageGet( 'port' );
+		window.onkeypress = keypress;
 		
 		var ch = storageGet( 'ch' );
 		ch = ch.replace(/\r\n|\r/g, "\n").split('\n');
@@ -137,10 +138,32 @@ jQuery.noConflict();
 					
 		});
 		
+		
+		
 		// Say Send Message
-		$('.say input').keypress( function( event ) {
-			console.log('say keypress');
-			if( event.which === 13 ){
+		function _sayKeydown( e ){
+			console.log(e);
+			if( e.which === 13 ){
+				alert('enter');
+			}
+		}
+		
+		
+		// Say Input Enter & Send Message
+		function keypress(e) {
+			
+			var say_id = e.target.id
+			
+			if( e.which === 13 ){
+				console.log(e);
+				console.log(  );
+				console.log("say return presses");
+			}
+		}
+		
+		$('.say input').keydown( function( e ) {
+			alert('a');
+			if ( e.which === 13 ) {
 				
 				// get channel id
 				var say_ch_id = $(this).parent().parent().attr('id');
