@@ -54,7 +54,7 @@ function storageGet( name, type ){
  */
 function textDecode( text ){
 	
-	text = utf.URLdecode(text);
+	text = Url.decode(text);
 	
 	return text;
 }
@@ -68,8 +68,8 @@ function textDecode( text ){
 function textEncode( text, codetype ){
 	
 	if( codetype == 'url' ){
-		text = utf.URLencode( text );
-	} else if( codetype == 'utf-8' ){
+		text = Url.encode( text );
+	} else {
 		text = Utf8.encode( text );
 	}
 	

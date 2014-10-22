@@ -18,10 +18,12 @@ jQuery.noConflict();
 		if( ch == 'backlog' ){
 			i = 'backlog';
 			say = '';
+		} else {
+			var say = '<p class="say">\
+				<input id="input_'+i+'" type="text" placeholder="Wow" onkyedown="_sayKeydown(e)">\
+				</p>';
 		}
-		
-		var say = '<p class="say"><input id="'+i+'" type="text" placeholder="Wow" onkyedown="_sayKeydown(e)"></p>';
-		
+			
 		var html = '\
 		<section id="'+i+'">\
 			<h2>'+ ch +'</h2>\
@@ -40,19 +42,61 @@ jQuery.noConflict();
 	/**
 	 * ターゲットに発言htmlをprependしちゃう
 	 * @param	ch			array チャネル配列
-	 * @param	to			string 発言先チャネル名
+	 * @param	id			number ch配列id(number)
 	 * @param	nick		string 名前
 	 * @param	text		string 内容
 	 * @param	command		string IRCコマンド
 	 */
-	function prependChat( ch, to, nick, text, command ){
+	function prependChat( ch, id, nick, text, command ){
 
+		/*
 		say_ch_id = $.inArray( to, ch ); // ch name search in array index
 		console.log('prependChat: say_ch_id: '+say_ch_id);
 		if( say_ch_id == -1 ){
 			to = 'backlog';
 		} else {
 			to = say_ch_id;
+		}
+		*/
+		
+		// nick is undef
+		if( nick == undefined ){ nick = 'Console'; }
+
+		// noticeならクラス付ける
+		if( command == 'NOTICE' ){
+			var li_class = 'from notice';
+		} else if ( command == 'PRIV' ){
+			var li_class = 'from priv';
+		} else if ( command == 'ME' ){
+			var li_class = 'me';
+		} else {
+			var li_class = 'from';
+		}
+
+		console.log( 'prependChat: id: ' + id + ' //nick: ' + nick + ' //text: ' + text + ' //command: '+ command );
+		var html ='\
+		<li class="'+ li_class +'">\
+			<em>&lt;'+ nick + '&gt;</em>\
+			' + text +'\
+		</li>';
+		
+		$( '#' + id + ' .chat').prepend(html);
+		console.log('---------------------------------------------------');
+	}
+	
+	/**
+	 * ターゲットに発言htmlをprependしちゃう
+	 * @param	nick		string 名前とか
+	 * @param	text		string 内容
+	 * @param	command		string IRCコマンド
+	 */
+	function prependBacklog( nick, text, command ){
+		
+		// to == number?string?
+		if( typeof to == 'number' ){
+			var say_ch_id = to;
+		} else if( to == 'backlog') {
+			//
 		}
 		
 		// nick is undef
@@ -93,6 +137,9 @@ jQuery.noConflict();
 		
 		var ch = storageGet( 'ch' );
 		ch = ch.replace(/\r\n|\r/g, "\n").split('\n');
+		if( typeof ch != 'object' ){
+			ch = { 0: ch }
+		}
 		// Backlog section create
 		console.log(ch);
 		
@@ -137,51 +184,32 @@ jQuery.noConflict();
 			$('#connecting').val('100').slideUp('slow'); // progress
 					
 		});
-		
-		
-		
-		// Say Send Message
-		function _sayKeydown( e ){
-			console.log(e);
-			if( e.which === 13 ){
-				alert('enter');
-			}
-		}
-		
+				
 		
 		// Say Input Enter & Send Message
 		function keypress(e) {
 			
-			var say_id = e.target.id
-			
-			if( e.which === 13 ){
-				console.log(e);
-				console.log(  );
-				console.log("say return presses");
+			if( e.which === 13 && e.target.value != '' ){
+				var say_id = $('#'+e.target.id).parent().parent().attr('id');
+				var say_val = e.target.value;
+				say_val = textEncode(say_val,'utf-8');
+				
+				console.log( e );
+				console.log( "say_id: "+ say_id );
+				console.log( "say_val: "+ say_val );
+				
+				chat.say( ch[say_id], say_val );
+				
+				console.log( "ch[say_id]: "+ ch[say_id]);
+				console.log( "ch: "+ch);
+				
+				prependChat( ch, say_id, nickname, say_val, 'ME' );
+				
+				$('#input_'+say_id).val('');
+				
 			}
 		}
-		
-		$('.say input').keydown( function( e ) {
-			alert('a');
-			if ( e.which === 13 ) {
-				
-				// get channel id
-				var say_ch_id = $(this).parent().parent().attr('id');
-				console.log( 'say_ch_id: ' + say_ch_id );
-				
-				var say_text = $(this).val();
-				say_text = textEncode(say_text,'utf-8');
-				
-				chat.say( ch[say_ch_id], say_text );
-				console.log( 'ch[say_ch_id]: '+ch[say_ch_id]);
-				
-				prependChat( ch, say_ch_id, nickname, text, 'ME' );
-				
-				$(this).val('');
-				
-			}
-		});
-		
+
 		
 		// Someone Part
 		chat.addListener('part', function( ch_name, nick, reason, message ) {
