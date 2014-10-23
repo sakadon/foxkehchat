@@ -1,25 +1,38 @@
 {
-  "name": "Foxkeh Chat",
-  "version": "0.1beta",
-  "description": "Foxkeh IRC Client! フォクすけがIRCを手伝ってくれるよ！",
-  "launch_path": "/index.html",
-  "icons": {
-  	"60": "/img/icon_60.png",
-  	"128": "/img/icon_128.png",
-    "256": "/img/icon_256.png"
-  },
-  "developer": {
-    "name": "SakaiYuya (@sakadon)",
-    "url": "http://sakadon.net/"
-  },
-  "type": "privileged",
-  "permissions": {
-    "tcp-socket": {
-      "description": "connect to IRC servers."
-    }
-  },
-  "installs_allowed_from": [
-    "*"
-  ],
-  "default_locale": "en"
+	"name": "Foxkeh Chat",
+	"version": "0.1beta",
+	"description": "Foxkeh IRC Client! フォクすけがIRCを手伝ってくれるよ！",
+	"launch_path": "/index.html",
+	"icons": {
+		"60": "/img/icon_60.png",
+		"128": "/img/icon_128.png",
+		"256": "/img/icon_256.png"
+	},
+	"developer": {
+		"name": "SakaiYuya (@sakadon)",
+		"url": "http://sakadon.net/"
+	},
+	"type": "privileged",
+	"permissions": {
+		"tcp-socket": {
+			"description": "connect to IRC servers."
+		},
+		"browser": {}
+	},
+	"installs_allowed_from": [
+		"*"
+	],
+	"default_locale": "en",
+	"activities": {
+	   "view": {
+	   		"disposition": "window",
+			"filters": {
+				"type": "url",
+				"url": {
+					"required": false, 
+					"regexp":"/^http?:/"
+				}
+			}
+		}
+	}
 }

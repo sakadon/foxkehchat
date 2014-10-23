@@ -1,4 +1,11 @@
 /**
+ * 定数宣言
+ * @param	REGEX_HTTP	httpから始まる恋物語
+ */
+const REGEX_HTTP = /((http|https|ftp):\/\/[\w?=&.\/-;#~%-]+(?![\w\s?&.\/;#~%"=-]*>))/g;
+
+
+/**
  * localStrorageに保存する関数, obj対応(したい)
  * @param	name	setItem名義
  * @param	value	保存する値 
@@ -55,8 +62,6 @@ function storageGet( name, type ){
 function textDecode( text ){
 	
 	text = Url.decode(text);
-	
-	text.replace(/((http|https|ftp):\/\/[\w?=&.\/-;#~%-]+(?![\w\s?&.\/;#~%"=-]*>))/g, '<a href="$1">$1</a> ');
 
 	return text;
 }
@@ -74,9 +79,48 @@ function textEncode( text, codetype ){
 	} else {
 		text = Utf8.encode( text );
 	}
+		
+	return text;
+}
+
+
+/**
+ * 来たテキストにURL無いか探してリンクする、画像ならimgにしちゃう
+ * @param	text		string	search text body
+ * @param	thumbnail	boolean	false == none thumb
+ */
+function textLinker( text, thumbnail ){
+	
+	text = text.replace( REGEX_HTTP, function( all, matchstr ) {
+		console.log( matchstr );
+		
+		replaced_text = matchstr.toLowerCase();
+		
+		if( thumbnail == false ){
+			
+			return replaced_text = '<a href="'+ matchstr +'" target="_blank">'+ matchstr +'</a>';
+			
+		} else if( replaced_text.match(/\.(gif|jpe?g|png)$/i) ){
+			
+			return replaced_text = '<a href="'+ matchstr +'" target="_blank">'+ matchstr +'</a>\
+				<br><img class="thumbnail" src="'+ matchstr +'">';
+		
+		} else if( replaced_text.match(/\.(pdf)$/i) ){
+			
+			var url = textEncode( matchstr, 'url' );
+			return replaced_text = '<a href="'+ matchstr +'" target="_blank">'+ matchstr +'</a>\
+				<br><img class="thumbnail" src="http://capture.heartrails.com/128x128/pdf?'+ matchstr +'">';
+		
+		} else {
+		
+			return replaced_text = '<a href="'+ matchstr +'" target="_blank">'+ matchstr +'</a>';
+		
+		}
+	});
 	
 	return text;
 }
+
 
 
 jQuery.noConflict();
@@ -130,6 +174,9 @@ jQuery.noConflict();
 			storageSet( "port", $('#port').val() );
 			storageSet( "ch", $('#ch').val() );
 		});
+		
+		
+		
 	
 	});
 	

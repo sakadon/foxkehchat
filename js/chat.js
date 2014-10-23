@@ -61,8 +61,10 @@ jQuery.noConflict();
 		} else {
 			var li_class = 'from';
 		}
-
 		console.log( 'prependChat(): id: ' + id + ' //nick: ' + nick + ' //text: ' + text + ' //command: '+ command );
+
+		text = textLinker( text, true );
+
 		var html ='\
 		<li class="'+ li_class +'">\
 			<em>&lt;'+ nick + '&gt;</em>\
@@ -93,8 +95,10 @@ jQuery.noConflict();
 		} else {
 			var li_class = 'from';
 		}
-
 		console.log( 'prependBacklog(): nick: ' + nick + ' //text: ' + text + ' //command: '+ command );
+		
+		text = textLinker( text, false );
+
 		var html ='\
 		<li class="'+ li_class +'">\
 			<em>&lt;'+ nick + '&gt;</em>\
@@ -438,6 +442,20 @@ jQuery.noConflict();
 */
 
 		
+		// Open all external links in the browser
+		$('.chat a[href^=http]').click(function(e){
+			console.log('.chat a clicked!');
+			e.preventDefault();
+		
+			var activity = new MozActivity({
+			name: "view",
+			data: {
+					type:	"url",
+					url:	$(this).attr("href")
+				}
+			});
+		 });
+
 		
 		/**
 		 * 切断するぞい！

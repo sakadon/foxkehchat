@@ -172,6 +172,11 @@ article section .chat li em {
 	font-style: normal;
 }
 
+article section .chat li .thumbnail {
+	margin: 0.3rem;
+	max-height: 128px;
+	border: solid 1px #aaa;
+}
 
 /**
  * About
