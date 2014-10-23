@@ -56,6 +56,8 @@ function textDecode( text ){
 	
 	text = Url.decode(text);
 	
+	text.replace(/((http|https|ftp):\/\/[\w?=&.\/-;#~%-]+(?![\w\s?&.\/;#~%"=-]*>))/g, '<a href="$1">$1</a> ');
+
 	return text;
 }
 

@@ -51,6 +51,8 @@ article header h1 {
 	padding: 0.5rem 1rem 0.45rem;
 	color: #fff;
 	border-bottom: solid 1px #FC3;
+	max-height: 2rem;
+	overflow: hidden;
 }
 
 
@@ -160,6 +162,8 @@ article section .chat {
 article section .chat li {
 	list-style: none;
 	font-size: 0.7rem;
+	word-wrap: break-word;
+	word-break: break-all;
 }
 article section .chat li em {
 	display: inline-block;

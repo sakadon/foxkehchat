@@ -257,13 +257,13 @@ jQuery.noConflict();
 				var to_id = $.inArray( to, ch );
 				console.log( "to_id: " + to_id );
 				
-				prependChat( to, nick, text, command );
+				prependChat( to_id, nick, text, command );
 			}
 		});
 
 		
 		/**
-		 * Priv イベント
+		 * Priv Message イベント
 		 * @param	nick	string nickname
 		 * @param	text	string message body
 		 * @param	message	object なんかいろいろ
@@ -328,22 +328,91 @@ jQuery.noConflict();
 		
 		/**
 		 * Error イベント, とりあえずエラーならここに来るっぽい
-		 * @param	text	string error message
+		 * @param	text	object error
 		 */
 		chat.addListener('error', function(text) {
 			
 			console.log('ERROR: ', text);
 			
 			var command = 'ERROR';
+			var err_text = '';
 			
-			text = textDecode( text );
+			if( typeof text == 'object' ){
+				$.each( text.args, function( i, val ){
+					err_text += textDecode( val +' ' );
+				});
+			} else {
+				err_text = textDecode( text );
+			}
 			
-			prependBacklog( 'Error', text, command );
+			prependBacklog( 'Error', err_text, command );
 			
 		});
 
 
+		/**
+		 * + Mode イベント
+		 * @param	chname		string target channel name
+		 * @param	by			string by nickname
+		 * @param	mode		string mode name
+		 * @param	target		string mode set target user nickname
+		 * @param	message		object misc
+		 */
+		chat.addListener('+mode', function( chname, by, mode, target, message ) {
+			
+			console.log('+MODE: chname: ' + chname + ' // by: ' + by + ' // mode: ' + mode + ' // target: ' + target );
+			console.log( message );
+			
+			// search channel id in array
+			var to_id = $.inArray( chname, ch );
+			console.log( "to_id: " + to_id );
+			
+			// target undef is mode for channel
+			if( target == null ){
+			
+				prependChat( to_id, by, 'changed mode +'+mode +' for '+ chname, message.command );
+
+			// target !undef is mode for user
+			} else {
+				
+				prependChat( to_id, by, 'changed mode +'+mode +' for '+ target, message.command );
+			}
+			
+		});
 		
+		
+		/**
+		 * - Mode イベント
+		 * @param	chname		string target channel name
+		 * @param	by			string by nickname
+		 * @param	mode		string mode name
+		 * @param	target		string mode set target user nickname	
+		 * @param	message		object misc
+		 */
+		chat.addListener('-mode', function( chname, by, mode, target, message ) {
+			
+			console.log('-MODE: chname: ' + chname + ' // by: ' + by + ' // mode: ' + mode + ' // target: ' + target );
+			console.log( message );
+			
+			// search channel id in array
+			var to_id = $.inArray( chname, ch );
+			console.log( "to_id: " + to_id );
+			
+			// target undef is mode for channel
+			if( target == null ){
+			
+				prependChat( to_id, by, 'changed mode +'+mode +' for '+ chname, message.command );
+
+			// target !undef is mode for user
+			} else {
+				
+				prependChat( to_id, by, 'changed mode +'+mode +' for '+ target, message.command );
+			}
+			
+		});
+
+
+
 /*
 		// Someone Quit
 		chat.addListener('quit', function(nick, reason, channels, message) {
