@@ -2,14 +2,23 @@ jQuery.noConflict();
 (function($) {
 	
 	// show progressbar
-	$('#connecting').show();
+	$('progress').show();
+	
+	// section height
+	var bodyHeight = $(window).innerHeight();
+	var sectionHeight = bodyHeight - $('header').innerHeight() - $('.bx-pager').innerHeight() - 100;
+	$('head').append('<style>\
+		#chat, #chat body { height: '+ bodyHeight +'px; }\
+		#chat article { height: '+ bodyHeight +'px; }\
+		#msg section { height: '+ sectionHeight +'px; }\
+	</style>');
 	
 	/*
 	 * メッセージ表示secitonの作成
 	 * @param	i		number index
 	 * @param	ch		string チャネル名
 	 */
-	function createMsg( i, chname ){
+	function createMsg( i, chname, msgSlider ){
 		
 		// backlog id attr value is backlog
 		if( chname == 'backlog' ){
@@ -25,7 +34,7 @@ jQuery.noConflict();
 		}
 			
 		var html = '\
-		<section id="'+i+'">\
+		<section id="'+i+'" class="slide">\
 			<h2>'+ chname +'</h2>\
 			'+say+'\
 			<ol class="chat">\
@@ -54,12 +63,19 @@ jQuery.noConflict();
 		// noticeならクラス付ける
 		if( command == 'NOTICE' ){
 			var li_class = 'from notice';
+			var label = '<em>&lt;'+ nick + '&gt;</em>';
 		} else if ( command == 'PRIV' ){
 			var li_class = 'from priv';
+			var label = '<em>&lt;'+ nick + '&gt;</em>';
 		} else if ( command == 'ME' ){
 			var li_class = 'me';
+			var label = '<em>&lt;'+ nick + '&gt;</em>';
+		} else if ( command == 'NAMES' ){
+			var li_class = 'names';
+			var label = '';
 		} else {
 			var li_class = 'from';
+			var label = '<em>&lt;'+ nick + '&gt;</em>';
 		}
 		console.log( 'prependChat(): id: ' + id + ' //nick: ' + nick + ' //text: ' + text + ' //command: '+ command );
 
@@ -67,8 +83,8 @@ jQuery.noConflict();
 
 		var html ='\
 		<li class="'+ li_class +'">\
-			<em>&lt;'+ nick + '&gt;</em>\
-			' + text +'\
+			'+ label +'\
+			'+ text +'\
 		</li>';
 		
 		$( '#' + id + ' .chat').prepend(html);
@@ -110,7 +126,7 @@ jQuery.noConflict();
 	}
 	
 
-	window.addEventListener('DOMContentLoaded', function( ) {
+	window.addEventListener('DOMContentLoaded', function() {
 
 		// get settings
 		var nickname = storageGet( 'nickname' );
@@ -129,7 +145,7 @@ jQuery.noConflict();
 		
 		// Header my nickname display
 		$('header h1').append( name +' ('+nickname+')' );
-		
+			
 		/**
 		 * Client インスタンスを呼んじゃう
 		 * @param	host		string hostname
@@ -144,7 +160,19 @@ jQuery.noConflict();
 			debug: true,
 			//channels: [ch],
 		});
+
 		
+		/**
+		 * bxSlider initialize
+		 */
+		var msgSlider = $('#msg').bxSlider({
+			slideSelector: 'section.slide',
+			infiniteLoop: true,
+			controls: false,
+			swipeThreshold: 100
+			//adaptiveHeight: true
+		});
+			
 		
 		/**
 		 * 今日もがんばって接続するぞい！
@@ -152,9 +180,6 @@ jQuery.noConflict();
 		 */
 		chat.connect( 5, function() {
 			
-			var progress_val = '10';
-			$('#connecting').val(progress_val); // progress
-
 			// channels each
 			$.each( ch, function( i, chname ){
 				
@@ -165,16 +190,15 @@ jQuery.noConflict();
 										
 					// CH section create
 					createMsg( i, chname );
+					msgSlider.reloadSlider();
 					
-					progress_val += '10';
-					$('#connecting').val(progress_val);
-	
+					$('progress').fadeOut('slow'); // progress
 				});
 			
 			});
 		
 			createMsg( ch.leigth++ , 'backlog' );
-			$('#connecting').val('100').slideUp('slow'); // progress
+			msgSlider.reloadSlider();
 					
 		});
 				
@@ -204,7 +228,7 @@ jQuery.noConflict();
 				$('#input_'+say_id).val('');
 			}
 		}
-
+				
 
 		/**
 		 * Message イベント
@@ -305,10 +329,34 @@ jQuery.noConflict();
 			var to_id = $.inArray( chname, ch );
 			console.log( "to_id: " + to_id );
 			
-			prependChat( to_id, nick, reason, message.command );
+			prependChat( to_id, nick, 'leave the ch. ('+reason+')', message.command );
 			
 		});
-	
+		
+		
+		/**
+		 * Quit イベント
+		 * @param	nick		string	quit nickname
+		 * @param	reason		string	quit comment
+		 * @param	channels	object	quit channels arry { n: 'channelname' }
+		 * @param	message		object	いろいろ
+		 */
+		chat.addListener('quit', function(nick, reason, channels, message) {
+			
+			console.log( 'QUIT: ' + nick + '//' + reason );
+			console.log( message );
+			console.log( channels );
+
+			// search channel id in array
+			$.each( channels, function( i, value ){
+				var to_id = $.inArray( value, ch );
+				console.log( i + " >> to_id: " + to_id );
+				
+				prependChat( to_id, nick, 'leave the ch. ('+reason+')', message.command );
+			});
+			
+		});
+
 	
 		/**
 		 * Join イベント
@@ -325,7 +373,7 @@ jQuery.noConflict();
 			var to_id = $.inArray( chname, ch );
 			console.log( "to_id: " + to_id );
 			
-			prependChat( to_id, nick, '('+message.user+'@'+message.host+')', message.command );
+			prependChat( to_id, nick, 'enter the ch. ('+message.user+'@'+message.host+')', message.command );
 			
 		});
 		
@@ -414,47 +462,79 @@ jQuery.noConflict();
 			}
 			
 		});
-
-
-
-/*
-		// Someone Quit
-		chat.addListener('quit', function(nick, reason, channels, message) {
+		
+		
+		/**
+		 * Nick イベント
+		 * @param	channel		string channel name
+		 * @param	nicks		object nicknames arry { nickname: '@' or '' }
+		 */
+		chat.addListener('names', function ( chname, nicks ) {
+		
+			console.log('NAMES: chname: ' + chname + '' );
+			console.log( nicks );
 			
-			console.log( 'QUIT: ' + nick + '//' + reason );
+			var namesArry = [];
+			$.each( nicks, function( name, oper ){
+				namesArry.push( oper + name );
+			});
+	
+			// search channel id in array
+			var to_id = $.inArray( chname, ch );
+			console.log( "to_id: " + to_id );
+			
+			prependChat( to_id, 'Console', '<em>&lt;'+namesArry.join('&gt; &lt;')+'&gt;</em>' , 'NAMES' );
+		
+		});
+
+
+		/**
+		 * Nick イベント
+		 * @param	chname		string target channel name
+		 * @param	by			string by nickname
+		 * @param	mode		string mode name
+		 */
+		chat.addListener('nick', function ( oldnick, newnick, channels, message) {
+			
+			console.log( 'NICK: '+ oldnick +' >> '+ newnick +'' );
 			console.log( message );
 			console.log( channels );
-			
-			prependCommand( ch, channels, nick, reason, message.command );
-			
-		});
 
-
-		// Change Nick
-		chat.addListener('nick', function ( oldnick, newnick, channels, message) {
-			console.log('NICK: ' + nick + ' => ME: ' + text );
-			console.log(message);
-			console.log(channels);
-			
-			prependCommand( ch, channels, oldnick, '->'+newnick, 'NICK' );
-		});
-
-*/
-
-		
-		// Open all external links in the browser
-		$('.chat a[href^=http]').click(function(e){
-			console.log('.chat a clicked!');
-			e.preventDefault();
-		
-			var activity = new MozActivity({
-			name: "view",
-			data: {
-					type:	"url",
-					url:	$(this).attr("href")
-				}
+			// search channel id in array
+			$.each( channels, function( i, value ){
+				var to_id = $.inArray( value, ch );
+				console.log( i + " >> to_id: " + to_id );
+				
+				prependChat( to_id, oldnick, 'has been changed to <em>&lt;'+newnick+'&gt;</em>', message.command );
 			});
-		 });
+
+		});
+
+
+		/**
+		 * ニックネームの変更
+		 * 
+		 */
+		$('#change_nickname').on('click', function(){
+			var result = window.prompt( 'Change nickname?', nickname );
+			// Input
+			if( result.match(/^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$/) ){
+				
+				console.log('Change Nickname: ' + result );
+				
+				chat.send('nick', result);
+				
+				nickname = result;
+				
+				// Header my nickname display
+				$('header h1').text( name +' ('+nickname+')' );
+
+			
+			} else {
+				window.alert('This input can not be changed.');
+			}
+		
+		});
 
 		
 		/**
@@ -481,6 +561,8 @@ jQuery.noConflict();
 			}
 		});
 		
+		
+
 	
 	});
 	

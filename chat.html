@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html id="chat">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width">
+<meta name="viewport" content="width=device-width, user-scalable=no">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="ui/progress_activity.css">
+<link rel="stylesheet" href="js/jquery.bxslider/jquery.bxslider.css">
 <script src="js/node-irc-0.3.7/lib/codes.js"></script>
 <script src="js/node-irc-0.3.7/lib/irc.js"></script>
 <script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/jquery.bxslider/jquery.bxslider.min.js"></script>
 <script src="js/script.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/utf8.js"></script>
@@ -15,34 +17,34 @@
 </head>
 <body>
 
-<progress id="connecting" max="100" value="0" class="pack-activity"></progress>
 
 <article>
 
 	<header>
 	
 		<h1></h1>
+		<menu>
+			<a href="#operations" id="toolbar_operations"><span class="nonedisplay">Operations</span></a>
+		</menu>
 	
 	</header>
-		
-	<div id="msg">
-		<!--
-		<section id="channel">
-			<h2>Channel name</h2>
-			
-			<ol class="chat">
-				<li class="progress"><progress></progress></li>
-			</ol>
-		</section>
-		-->
-
+	<progress></progress>
+	
+	<div class="wrapper">
+		<div id="msg"></div>
 	</div>
-
-	<footer>
-		
-		<p><button id="disconnect">Disconnect</button></p>
-		
-	</footer>
+	
+	<aside>
+	
+		<nav id="operations">
+			<h3>Operations</h3>
+			<ul>
+				<li><button id="change_nickname">Change Nickname</button></li>
+				<li><button id="disconnect">Disconnect</button></li>
+			</ul>
+		</nav>
+	
+	</aside>
 
 </article>
 

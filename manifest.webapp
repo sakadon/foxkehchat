@@ -1,7 +1,7 @@
 {
-	"name": "Foxkeh Chat",
-	"version": "0.1beta",
-	"description": "Foxkeh IRC Client! フォクすけがIRCを手伝ってくれるよ！",
+	"name": "FoxkehChat",
+	"version": "0.3",
+	"description": "IRC client for FirefoxOS supported by Foxkeh!",
 	"launch_path": "/index.html",
 	"icons": {
 		"60": "/img/icon_60.png",
@@ -16,23 +16,13 @@
 	"permissions": {
 		"tcp-socket": {
 			"description": "connect to IRC servers."
-		},
-		"browser": {}
+		}
 	},
 	"installs_allowed_from": [
 		"*"
 	],
-	"default_locale": "en",
-	"activities": {
-	   "view": {
-	   		"disposition": "window",
-			"filters": {
-				"type": "url",
-				"url": {
-					"required": false, 
-					"regexp":"/^http?:/"
-				}
-			}
-		}
-	}
+	"orientation": [
+		"portrait"
+	],
+	"default_locale": "en"
 }

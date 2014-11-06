@@ -176,6 +176,21 @@ jQuery.noConflict();
 		});
 		
 		
+		/// Toolbar
+		$('header menu a').on('click', function(e){
+		
+			id_name = $(this).attr('href');
+			console.log( 'click toolbar : ' + id_name );
+			$(id_name).toggle('fast');
+		
+		});
+		$('aside nav h3').on('click', function(e){
+			$(this).parent().toggle('fast');
+		});
+		$('aside nav button').on('click', function(e){
+			//そのうちなんとかする...
+			$(this).parent().parent().parent().toggle('fast');
+		});
 		
 	
 	});
