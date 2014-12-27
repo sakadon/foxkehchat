@@ -26,7 +26,9 @@ jQuery.noConflict();
 			
 		var html = '\
 		<section id="'+i+'" class="slide">\
-			<label for="input_'+i+'"><h2>'+ chname +'</h2></label>\
+			<label for="input_'+i+'">\
+				<h2>'+ chname +'</h2>\
+			</label>\
 			<div class="chat_list" id="chat_'+i+'">\
 				'+say+'\
 				<ol class="chat">\

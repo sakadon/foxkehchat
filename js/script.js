@@ -217,12 +217,30 @@ jQuery.noConflict();
 		});
 
 		
-		/// toggle chat box
+		/// tap on toggle box and jumpin
 		$(document).on('click', 'label', function(){
-			var chat_box = $(this).attr('for');
-			console.log(chat_box);
+			// toggle chat list
+			var say_input = '#'+$(this).attr('for');
+			var jump_id = '#'+$(this).parent().attr('id');
+			
+			console.log('say_input:' + say_input);
+			console.log('jump_id: ' + jump_id);
+			
 			$(this).next('.chat_list').toggle();
+		
+			if (jump_id) {
+				var jump_offset = $(jump_id).offset().top;
+				//console.log(jump_offset);
+				$('html,body').animate({scrollTop: jump_offset},200);
+				$(chat_box).focus();
+				return false;
+			}
+			
 		});
+		
+		/// tap on focus chat box
+		
+		
 
 	});
 	
