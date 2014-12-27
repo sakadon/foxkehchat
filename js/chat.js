@@ -3,22 +3,13 @@ jQuery.noConflict();
 	
 	// show progressbar
 	$('progress').show();
-	
-	// section height
-	var bodyHeight = $(window).innerHeight();
-	var sectionHeight = bodyHeight - $('header').innerHeight() - $('.bx-pager').innerHeight() - 100;
-	$('head').append('<style>\
-		#chat, #chat body { height: '+ bodyHeight +'px; }\
-		#chat article { height: '+ bodyHeight +'px; }\
-		#msg section { height: '+ sectionHeight +'px; }\
-	</style>');
-	
+		
 	/*
 	 * メッセージ表示secitonの作成
 	 * @param	i		number index
 	 * @param	ch		string チャネル名
 	 */
-	function createMsg( i, chname, msgSlider ){
+	function createMsg( i, chname ){
 		
 		// backlog id attr value is backlog
 		if( chname == 'backlog' ){
@@ -35,11 +26,13 @@ jQuery.noConflict();
 			
 		var html = '\
 		<section id="'+i+'" class="slide">\
-			<h2>'+ chname +'</h2>\
-			'+say+'\
-			<ol class="chat">\
-				<li><em>Join</em> '+chname+'</li>\
-			</ol>\
+			<label for="input_'+i+'"><h2>'+ chname +'</h2></label>\
+			<div class="chat_list" id="chat_'+i+'">\
+				'+say+'\
+				<ol class="chat">\
+					<li><em>Join</em> '+chname+'</li>\
+				</ol>\
+			</div>\
 		</section>';
 		
 		$('#msg').prepend(html);
@@ -56,7 +49,7 @@ jQuery.noConflict();
 	 * @param	command		string IRCコマンド
 	 */
 	function prependChat( id, nick, text, command ){
-		
+
 		// nick is undef
 		if( nick == undefined ){ nick = 'Console'; }
 
@@ -134,6 +127,8 @@ jQuery.noConflict();
 		var name = storageGet( 'name' );
 		var host = storageGet( 'host' );
 		var port = storageGet( 'port' );
+		var password = storageGet( 'password' );
+		var encode = storageGet( 'encode' );
 		window.onkeypress = keypress;
 		
 		var ch = storageGet( 'ch' );
@@ -153,6 +148,7 @@ jQuery.noConflict();
 		 */
 		var chat = new Client( host, nickname, {
 			port: port,
+			password: password,
 			userName: username,
 			realName: 'FoxkehChat on FirefoxOS',
 			//stripColors: true,
@@ -161,19 +157,7 @@ jQuery.noConflict();
 			//channels: [ch],
 		});
 
-		
-		/**
-		 * bxSlider initialize
-		 */
-		var msgSlider = $('#msg').bxSlider({
-			slideSelector: 'section.slide',
-			infiniteLoop: true,
-			controls: false,
-			swipeThreshold: 100
-			//adaptiveHeight: true
-		});
-			
-		
+				
 		/**
 		 * 今日もがんばって接続するぞい！
 		 * @param	5	number is try reconnection count
@@ -183,6 +167,9 @@ jQuery.noConflict();
 			// channels each
 			$.each( ch, function( i, chname ){
 				
+				// channel name encoding
+				chname = textEncode( chname, encode );
+				
 				// Self JOIN
 				chat.join( chname, function() {
 					
@@ -190,7 +177,6 @@ jQuery.noConflict();
 										
 					// CH section create
 					createMsg( i, chname );
-					msgSlider.reloadSlider();
 					
 					$('progress').fadeOut('slow'); // progress
 				});
@@ -198,7 +184,6 @@ jQuery.noConflict();
 			});
 		
 			createMsg( ch.leigth++ , 'backlog' );
-			msgSlider.reloadSlider();
 					
 		});
 				
@@ -215,7 +200,7 @@ jQuery.noConflict();
 				// get input value
 				var say_val = e.target.value;
 				
-				say_val_encode = textEncode(say_val,'utf-8');
+				say_val_encode = textEncode(say_val, encode);
 				
 				//console.log( e );
 				console.log( "say_id: "+ say_id + " // say_val: "+ say_val );
@@ -238,11 +223,15 @@ jQuery.noConflict();
 		 * @param	message	object なんかいろいろ
 		 */
 		chat.addListener('message', function (nick, to, text, message) {
-			console.log('MESSAGE: ' + nick + ' => ' + to + ' // ' + text);
-			console.log(message);
-			
 			var command = 'MESSAGE';
 			
+			// decode
+			text = textDecode( text, encode );
+			to = textEncode( to, encode );
+
+			console.log('MESSAGE: ' + nick + ' => ' + to + ' // ' + text);
+			//console.log(message);
+					
 			// to channel message or private message
 			if( to == nickname ){
 				prependBacklog( nickname, text, 'ME' );
@@ -250,10 +239,15 @@ jQuery.noConflict();
 				// search channel id in array
 				var to_id = $.inArray( to, ch );
 				console.log( "to_id: " + to_id );
+				
+				// non id
+				if( to_id == -1 ){
+					ch.push( to );
+					createMsg( ch.length-1, to );
+					to_id = $.inArray( to, ch );
+				}
+				
 			}
-			
-			// decode
-			text = textDecode( text );
 			
 			prependChat( to_id, nick, text, command );
 		});
@@ -267,13 +261,14 @@ jQuery.noConflict();
 		 * @param	message	object なんかいろいろ
 		 */
 		chat.addListener('notice', function (nick, to, text, message) {
-			console.log('NOTICE: '+ nick + ' => ' + to + ' // ' + text);
-			console.log(message);
-			
 			var command = 'NOTICE';
 
 			// decode
-			text = textDecode( text );
+			text = textDecode( text, encode )
+			to = textEncode( to, encode );
+			
+			console.log('NOTICE: '+ nick + ' => ' + to + ' // ' + text);
+			//console.log(message);
 			
 			// non nick == system notice
 			if( nick == null ){
@@ -284,6 +279,13 @@ jQuery.noConflict();
 				// search channel id in array
 				var to_id = $.inArray( to, ch );
 				console.log( "to_id: " + to_id );
+				
+				// non id
+				if( to_id == -1 ){
+					ch.push( to );
+					createMsg( ch.length-1, to );
+					to_id = $.inArray( to, ch );
+				}
 				
 				prependChat( to_id, nick, text, command );
 			}
@@ -297,12 +299,13 @@ jQuery.noConflict();
 		 * @param	message	object なんかいろいろ
 		 */
 		chat.addListener('pm', function (nick, text, message) {
-			console.log('PM: ' + nick + ' => ME // ' + text );
-			console.log(message);
-			
 			var command = 'PM';
 			
-			text = textDecode( text );
+			// encode
+			text = textDecode( text, encode );
+			
+			console.log('PM: ' + nick + ' => ME // ' + text );
+			console.log(message);
 			
 			prependBacklog( nick, text, command );
 		});
@@ -316,6 +319,9 @@ jQuery.noConflict();
 		 * @param	message		object	いろいろ
 		 */
 		chat.addListener('part', function( chname, nick, reason, message ) {
+
+			//encode
+			chname = textEncode( chname, encode );
 			
 			console.log( 'PART: chname: ' + chname + ' // nick: ' + nick + ' // reason: ' + reason );
 			console.log( message );
@@ -366,6 +372,9 @@ jQuery.noConflict();
 		 */
 		chat.addListener('join', function( chname, nick, message ) {
 			
+			//encode
+			chname = textEncode( chname, encode );
+			
 			console.log( 'JOIN: chname: ' + chname + ' // nick: ' + nick );
 			console.log( message );
 
@@ -383,7 +392,9 @@ jQuery.noConflict();
 		 * @param	text	object error
 		 */
 		chat.addListener('error', function(text) {
-			
+
+			text = textEncode( text, encode );
+
 			console.log('ERROR: ', text);
 			
 			var command = 'ERROR';
@@ -391,10 +402,10 @@ jQuery.noConflict();
 			
 			if( typeof text == 'object' ){
 				$.each( text.args, function( i, val ){
-					err_text += textDecode( val +' ' );
+					err_text += textDecode( val +' ', encode );
 				});
 			} else {
-				err_text = textDecode( text );
+				err_text = textDecode( text, encode );
 			}
 			
 			prependBacklog( 'Error', err_text, command );
@@ -411,7 +422,9 @@ jQuery.noConflict();
 		 * @param	message		object misc
 		 */
 		chat.addListener('+mode', function( chname, by, mode, target, message ) {
-			
+
+			chname = textEncode( chname, encode );
+
 			console.log('+MODE: chname: ' + chname + ' // by: ' + by + ' // mode: ' + mode + ' // target: ' + target );
 			console.log( message );
 			
@@ -442,7 +455,9 @@ jQuery.noConflict();
 		 * @param	message		object misc
 		 */
 		chat.addListener('-mode', function( chname, by, mode, target, message ) {
-			
+
+			chname = textEncode( chname, encode );
+		
 			console.log('-MODE: chname: ' + chname + ' // by: ' + by + ' // mode: ' + mode + ' // target: ' + target );
 			console.log( message );
 			
@@ -470,7 +485,9 @@ jQuery.noConflict();
 		 * @param	nicks		object nicknames arry { nickname: '@' or '' }
 		 */
 		chat.addListener('names', function ( chname, nicks ) {
-		
+
+			chname = textEncode( chname, encode );
+
 			console.log('NAMES: chname: ' + chname + '' );
 			console.log( nicks );
 			
@@ -490,9 +507,10 @@ jQuery.noConflict();
 
 		/**
 		 * Nick イベント
-		 * @param	chname		string target channel name
-		 * @param	by			string by nickname
-		 * @param	mode		string mode name
+		 * @param	oldnick		string old nicname
+		 * @param	newnick		string new nickname
+		 * @param	channels	array channels
+		 * @param	message		etc
 		 */
 		chat.addListener('nick', function ( oldnick, newnick, channels, message) {
 			
@@ -560,8 +578,8 @@ jQuery.noConflict();
 				
 			}
 		});
-		
-		
+	
+	
 
 	
 	});

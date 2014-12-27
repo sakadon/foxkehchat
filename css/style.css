@@ -11,9 +11,11 @@ body {
 }
 
 article {
+	position: relative;
 	margin: 0 1px;
-	padding: 0;
-	background: #fff;
+	padding: 0 0 180px 0;
+	background: #fff url(../img/bg.png) no-repeat right bottom;
+	background-size: 59%;
 	border-radius: 13px;
 }
 
@@ -116,41 +118,28 @@ article footer p {
 
 article section {
 	border-radius: 13px;
-	margin: 0;
+	margin: 0 0 0.5rem 0;
 	padding: 0;
 	border: solid 2px rgba(237,144,23,1);
 	background: -moz-linear-gradient(top, rgba(237,144,23,1) 0%, rgba(255,168,76,1) 46%);
 }
 
 article section h2 {
-	padding: 0.1rem 0.5rem;
+	padding: 0.4rem 0.5rem;
 	margin: 0;
-	font-size: 0.8rem;
+	font-size: 0.85rem;
 	color: #fff;
-	letter-spacing: 1px;
-	text-transform: uppercase;
+	text-shadow: 0 1px 0 #777;
 }
 
 #page section {
 	margin-bottom: 0.5rem;
 }
 
-#msg section {
-	margin-right: 0.5rem;
-	left: -0.5rem;
-	overflow: scroll;
+#msg section .chat_list {
+	display: none;
 }
-#msg section:after {
-	display: block;
-	content: '';
-	position: absolute;
-	bottom: 0.35rem;
-	right: 0.25rem;
-	width: 160px;
-	height: 160px;
-	background: url(../img/bg.png) no-repeat center center;
-	background-size: contain;
-}
+
 
 /**
  * リスト

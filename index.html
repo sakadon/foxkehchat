@@ -52,8 +52,19 @@
 						<input id="port" name="port" type="text" value="6667" pattern="[1-9][0-9]*" required>
 					</li>
 					<li>
+						<label>Password</label>
+						<input id="password" name="password" type="password" placeholder="Not required">
+					</li>
+					<li>
 						<label>Channels</label>
 						<textarea id="ch" name="ch" type="text" placeholder="#foxkehchat">#foxkehchat</textarea>
+					</li>
+					<li>
+						<label>Encode</label>
+						<select name="encode" id="encode">
+							<option value="utf-8" selected>UTF-8</option>
+							<option value="iso-2022-jp">ISO-2022-JP</option>
+						</select>
 					</li>
 					<li>
 						<button id="connect">Connect</button>

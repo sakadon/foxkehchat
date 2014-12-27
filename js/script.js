@@ -57,12 +57,23 @@ function storageGet( name, type ){
 
 /**
  * node-ircから来たテキストをURLデコードする
- * @param	text	テキストデータ
+ * @param	text		テキストデータ
+ * @param	codetype	utf-8, iso-2022-jp
  */
-function textDecode( text ){
+function textDecode( text, codetype ){
 	
-	text = Url.decode(text);
-
+	if( codetype == 'utf-8' ){
+		text = Url.decode(text);
+	} else {
+		text = Encoding.convert( text, {
+			to: 'UNICODE',
+			from: 'AUTO'
+		});
+	}
+	
+	// Encoding.jsに統一出来る気がする
+	// 暇があったらやる
+	
 	return text;
 }
 
@@ -70,14 +81,19 @@ function textDecode( text ){
 /**
  * 来たテキストをエンコードする
  * @param	text		テキストデータ
- * @param	codetype	url, utf-8
+ * @param	codetype	url, utf-8, iso-2022-jp
  */
 function textEncode( text, codetype ){
 	
 	if( codetype == 'url' ){
 		text = Url.encode( text );
-	} else {
+	} else if( codetype == 'utf-8') {
 		text = Utf8.encode( text );
+	} else {
+		text = Encoding.convert( text, {
+			to: 'UNICODE',
+			from: 'AUTO'
+		});
 	}
 		
 	return text;
@@ -125,7 +141,7 @@ function textLinker( text, thumbnail ){
 
 jQuery.noConflict();
 (function($) {
-	
+
 	window.addEventListener('DOMContentLoaded', function( ) {
 	
 		// YOU
@@ -145,6 +161,12 @@ jQuery.noConflict();
 		}
 		if( storageGet('port') ){
 			$('#port').val( storageGet('port') );
+		}
+		if( storageGet('password') ){
+			$('#password').val( storageGet('password') );
+		}
+		if( storageGet('encode') ){
+			$('#encode').val( storageGet('encode') );
 		}
 		if( storageGet('ch') ){
 			$('#ch').val( storageGet('ch') );
@@ -172,12 +194,14 @@ jQuery.noConflict();
 			storageSet( "name", $('#name').val() );
 			storageSet( "host", $('#host').val() );
 			storageSet( "port", $('#port').val() );
+			storageSet( "password", $('#password').val() );
+			storageSet( "encode", $('#encode').val() );
 			storageSet( "ch", $('#ch').val() );
 		});
 		
 		
 		/// Toolbar
-		$('header menu a').on('click', function(e){
+		$('header').find('menu').find('a').on('click', function(e){
 		
 			id_name = $(this).attr('href');
 			console.log( 'click toolbar : ' + id_name );
@@ -191,8 +215,15 @@ jQuery.noConflict();
 			//そのうちなんとかする...
 			$(this).parent().parent().parent().toggle('fast');
 		});
+
 		
-	
+		/// toggle chat box
+		$(document).on('click', 'label', function(){
+			var chat_box = $(this).attr('for');
+			console.log(chat_box);
+			$(this).next('.chat_list').toggle();
+		});
+
 	});
 	
 
