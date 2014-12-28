@@ -1,7 +1,7 @@
 {
 	"name": "FoxkehChat",
-	"version": "0.5",
-	"description": "IRC client for FirefoxOS supported by Foxkeh!",
+	"version": "0.6",
+	"description": "IRC client for FirefoxOS Supported by Foxkeh!",
 	"launch_path": "/index.html",
 	"icons": {
 		"60": "/img/icon_60.png",
