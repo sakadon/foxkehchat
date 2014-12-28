@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, user-scalable=no">
 <link rel="stylesheet" href="css/style.css" type="text/css">
 <script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/encoding.min.js"></script>
 <script src="js/script.js"></script>
 </head>
 <body>
@@ -14,11 +15,14 @@
 	<header>
 	
 		<h1>FoxkehChat</h1>
-	
+		<menu>
+			<a href="#operations" id="toolbar_operations"><span class="nonedisplay">Operations</span></a>
+		</menu>
+
 	</header>
 	
 	<div class="wrapper">
-		<form id="config" action="chat.html">
+		<form id="config" action="chat.html" accept-charset="utf-8">
 			<section>
 				<h2>You</h2>
 				
@@ -53,11 +57,11 @@
 					</li>
 					<li>
 						<label>Password</label>
-						<input id="password" name="password" type="password" placeholder="Not required">
+						<input id="password" name="password" type="password" placeholder="If any">
 					</li>
 					<li>
 						<label>Channels</label>
-						<textarea id="ch" name="ch" type="text" placeholder="#foxkehchat">#foxkehchat</textarea>
+						<textarea id="ch" name="ch" type="text" placeholder="#foxkehchat"></textarea>
 					</li>
 					<li>
 						<label>Encode</label>
@@ -79,11 +83,23 @@
 			<h2>About</h2>
 			<ul>
 				<li><a href="http://en.wikipedia.org/wiki/Internet_Relay_Chat" target="_blank">What's IRC? (Go wikipedia)</a></li>
-				<li><a href="http://sakadon.net/foxkehchat/" target="_blank">FoxkehChat</a> v0.5 by &copy; SakaiYuya (<a href="https://twitter.com/sakadon/" target="_blank">@sakadon</a>).</li>
+				<li><a href="http://sakadon.net/foxkehchat/" target="_blank">FoxkehChat</a> v0.6 by &copy; SakaiYuya (<a href="https://twitter.com/sakadon/" target="_blank">@sakadon</a>).</li>
 				<li>&quot;Foxkeh&quot; &copy; 2006 Mozilla Japan.</li>
 			</ul>
 		</section>
 	</div>
+	
+	
+	<aside>
+	
+		<nav id="operations">
+			<h3>Commands</h3>
+			<ul>
+				<li><button id="test_setting">Test Connect Setting</button></li>
+			</ul>
+		</nav>
+	
+	</aside>
 	
 </article>
 

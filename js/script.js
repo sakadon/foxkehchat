@@ -35,7 +35,7 @@ function storageGet( name, type ){
 
 	//暫定
 	var value = localStorage.getItem( name );
-	console.log( 'get localstorage: "' + name + '"=> ' + value );
+	console.log( 'get localstorage: (' + name + ') => ' + value );
 	return value;
 
 	/* これなぜかifが仕事しない糞い
@@ -52,51 +52,6 @@ function storageGet( name, type ){
 		return value;
 	}
 	*/
-}
-
-
-/**
- * node-ircから来たテキストをURLデコードする
- * @param	text		テキストデータ
- * @param	codetype	utf-8, iso-2022-jp
- */
-function textDecode( text, codetype ){
-	
-	if( codetype == 'utf-8' ){
-		text = Url.decode(text);
-	} else {
-		text = Encoding.convert( text, {
-			to: 'UNICODE',
-			from: 'AUTO'
-		});
-	}
-	
-	// Encoding.jsに統一出来る気がする
-	// 暇があったらやる
-	
-	return text;
-}
-
-
-/**
- * 来たテキストをエンコードする
- * @param	text		テキストデータ
- * @param	codetype	url, utf-8, iso-2022-jp
- */
-function textEncode( text, codetype ){
-	
-	if( codetype == 'url' ){
-		text = Url.encode( text );
-	} else if( codetype == 'utf-8') {
-		text = Utf8.encode( text );
-	} else {
-		text = Encoding.convert( text, {
-			to: 'UNICODE',
-			from: 'AUTO'
-		});
-	}
-		
-	return text;
 }
 
 
@@ -138,6 +93,18 @@ function textLinker( text, thumbnail ){
 }
 
 
+/**
+ * HTMLエスケープする関数
+ * @param	text	string	エスケープするテキスト
+ */
+function escapeText( text ){
+	// HTML escape!
+	var dammy_element = document.createElement('div');
+	dammy_element.appendChild(document.createTextNode(text));
+	return dammy_element.innerHTML;
+}
+
+
 
 jQuery.noConflict();
 (function($) {
@@ -173,7 +140,9 @@ jQuery.noConflict();
 		}
 
 
-		/// push Connect
+		/**
+		 * Index: Connect を押したら値を保存するぞい！
+		 */
 		$('#connect').on('click', function(){
 			
 			//YOU
@@ -197,6 +166,22 @@ jQuery.noConflict();
 			storageSet( "password", $('#password').val() );
 			storageSet( "encode", $('#encode').val() );
 			storageSet( "ch", $('#ch').val() );
+		});
+
+
+		/**
+		 * Index: Commands menu の Test Connect Settingの設定
+		 */
+		$('#test_setting').on('click', function(){
+			
+			$('#name').val( 'Freenode' );
+			$('#host').val( 'chat.freenode.net' );
+			$('#port').val( '6667' );
+			$('#password').val( '' );
+			$('#ch').val( '#foxkehchat' );
+			$('#encode').val( 'utf-8' );
+			alert( 'Test Connect Setting Done!' );
+			
 		});
 		
 		
@@ -223,8 +208,8 @@ jQuery.noConflict();
 			var say_input = '#'+$(this).attr('for');
 			var jump_id = '#'+$(this).parent().attr('id');
 			
-			console.log('say_input:' + say_input);
-			console.log('jump_id: ' + jump_id);
+			//console.log('say_input:' + say_input);
+			//console.log('jump_id: ' + jump_id);
 			
 			$(this).next('.chat_list').toggle();
 		
@@ -232,16 +217,13 @@ jQuery.noConflict();
 				var jump_offset = $(jump_id).offset().top;
 				//console.log(jump_offset);
 				$('html,body').animate({scrollTop: jump_offset},200);
-				$(chat_box).focus();
+				$(say_input).focus();
 				return false;
 			}
 			
 		});
 		
-		/// tap on focus chat box
 		
-		
-
 	});
 	
 

@@ -130,16 +130,29 @@ jQuery.noConflict();
 		var host = storageGet( 'host' );
 		var port = storageGet( 'port' );
 		var password = storageGet( 'password' );
-		var encode = storageGet( 'encode' );
+		
+		// convert to reserved word
+		if( storageGet( 'encode' ) == 'iso-2022-jp' ){
+			var encode = 'JIS';
+		} else {
+			var encode = 'UTF8';
+		}
+		
 		window.onkeypress = keypress;
 		
+		// get input channel lines
 		var ch = storageGet( 'ch' );
+		// No channel.
+		if( ch ){} else { // rubbish
+			ch = '!NaN!';
+		}
 		ch = ch.replace(/\r\n|\r/g, "\n").split('\n');
+		// If single line push ch object.
 		if( typeof ch != 'object' ){
-			ch = { 0: ch }
+			ch.push( ch );
 		}
 		console.log(ch);
-		
+
 		// Header my nickname display
 		$('header h1').append( name +' ('+nickname+')' );
 			
@@ -165,26 +178,36 @@ jQuery.noConflict();
 		 * @param	5	number is try reconnection count
 		 */
 		chat.connect( 5, function() {
-			
+		
+			//ch = Encoding.convert( ch, { to: encode, from: 'UNICODE' });
 			// channels each
 			$.each( ch, function( i, chname ){
-				
-				// channel name encoding
-				chname = textEncode( chname, encode );
-				
-				// Self JOIN
-				chat.join( chname, function() {
-					
-					console.log( 'JOIN: i: '+i+' //ch: '+chname );
-										
-					// CH section create
-					createMsg( i, chname );
-					
-					$('progress').fadeOut('slow'); // progress
-				});
 			
+				// channel name encoding
+				chname = Encoding.convert( chname, { to: encode, from: 'UNICODE' });
+				console.log( '>>>>>>> chname encode detect: '+ Encoding.detect( chname ) );
+				console.log( '>>>>>>> connect each chname: ' + chname);
+				
+				// if None channel.
+				if( chname == '!NaN!' ){
+					$('progress').fadeOut('slow'); // progress
+				
+				} else {
+					// Self JOIN
+					chat.join( chname, function() {
+						
+						chname = Encoding.convert( chname, { to: 'UNICODE', from: 'AUTO' });
+						
+						console.log( 'JOIN: i: '+i+' //ch: '+chname );
+											
+						// CH section create
+						createMsg( i, chname );
+						
+						$('progress').fadeOut('slow'); // progress
+					});
+				}
 			});
-		
+	
 			createMsg( ch.leigth++ , 'backlog' );
 					
 		});
@@ -195,23 +218,24 @@ jQuery.noConflict();
 		 * @param	e	object イベント
 		 */
 		function keypress(e) {
-			// enter?
-			if( e.which === 13 && e.target.value != '' ){
-				// get id attr value
-				var say_id = $('#'+e.target.id).parent().parent().attr('id');
-				// get input value
+			if( e.which === 13 && e.target.value != '' ){ // enter key event
+				var say_id = $('#'+e.target.id).parent().parent().parent().attr('id');
 				var say_val = e.target.value;
 				
-				say_val_encode = textEncode(say_val, encode);
-				
-				//console.log( e );
 				console.log( "say_id: "+ say_id + " // say_val: "+ say_val );
 				console.log( "ch[say_id]: "+ ch[say_id] + " // ch: "+ch);
 				
-				chat.say( ch[say_id], say_val_encode );
+				// message encoding
+				ch_id_encode = Encoding.convert( ch[say_id], { to: encode, from: 'AUTO' });
+				say_val_encode = Encoding.convert( say_val, { to: encode, from: 'AUTO' });
+				// message send to server
+				chat.say( ch_id_encode, say_val_encode );
 				
+				// message display to target chat list
+				say_val = escapeText( say_val );
 				prependChat( say_id, nickname, say_val, 'ME' );
 				
+				// reset input
 				$('#input_'+say_id).val('');
 			}
 		}
@@ -227,31 +251,36 @@ jQuery.noConflict();
 		chat.addListener('message', function (nick, to, text, message) {
 			var command = 'MESSAGE';
 			
-			// decode
-			text = textDecode( text, encode );
-			to = textEncode( to, encode );
+			// text encode for display
+			text = Encoding.convert( text, { to: 'UNICODE', from: encode });
+			text = escapeText( text );
+			to = Encoding.convert( to, { to: 'UNICODE', from: encode });
 
 			console.log('MESSAGE: ' + nick + ' => ' + to + ' // ' + text);
 			//console.log(message);
-					
-			// to channel message or private message
-			if( to == nickname ){
+			
+			// It null message is system message
+			if( nick == null ){
+				prependBacklog( 'Console', text, message.command );
+			
+			// It private message
+			} else if( to == nickname ){
 				prependBacklog( nickname, text, 'ME' );
+				
+			// It channel message
 			} else {
 				// search channel id in array
 				var to_id = $.inArray( to, ch );
-				console.log( "to_id: " + to_id );
 				
-				// non id
+				// if non id, add channel.
 				if( to_id == -1 ){
 					ch.push( to );
 					createMsg( ch.length-1, to );
 					to_id = $.inArray( to, ch );
 				}
 				
+				prependChat( to_id, nick, text, command );
 			}
-			
-			prependChat( to_id, nick, text, command );
 		});
 		
 
@@ -265,24 +294,27 @@ jQuery.noConflict();
 		chat.addListener('notice', function (nick, to, text, message) {
 			var command = 'NOTICE';
 
-			// decode
-			text = textDecode( text, encode )
-			to = textEncode( to, encode );
+			// text encode for display
+			text = Encoding.convert( text, { to: 'UNICODE', from: encode });
+			text = escapeText( text );
+			to = Encoding.convert( to, { to: 'UNICODE', from: encode });
 			
 			console.log('NOTICE: '+ nick + ' => ' + to + ' // ' + text);
 			//console.log(message);
 			
-			// non nick == system notice
+			// It null message is system message
 			if( nick == null ){
-			
 				prependBacklog( 'Console', text, message.command );
 			
+			// It private message
+			} else if( to == nickname ){
+				prependBacklog( nickname, text, 'ME' );
+				
 			} else {
 				// search channel id in array
 				var to_id = $.inArray( to, ch );
-				console.log( "to_id: " + to_id );
 				
-				// non id
+				// if non id, add channel.
 				if( to_id == -1 ){
 					ch.push( to );
 					createMsg( ch.length-1, to );
@@ -304,10 +336,10 @@ jQuery.noConflict();
 			var command = 'PM';
 			
 			// encode
-			text = textDecode( text, encode );
+			text = Encoding.convert( text, { to: 'UNICODE', from: encode });
 			
 			console.log('PM: ' + nick + ' => ME // ' + text );
-			console.log(message);
+			//console.log(message);
 			
 			prependBacklog( nick, text, command );
 		});
@@ -322,11 +354,12 @@ jQuery.noConflict();
 		 */
 		chat.addListener('part', function( chname, nick, reason, message ) {
 
-			//encode
-			chname = textEncode( chname, encode );
+			// encode
+			chname = Encoding.convert( chname, { to: 'UNICODE', from: encode });
+			reason = Encoding.convert( reason, { to: 'UNICODE', from: encode });
 			
 			console.log( 'PART: chname: ' + chname + ' // nick: ' + nick + ' // reason: ' + reason );
-			console.log( message );
+			//console.log( message );
 			
 			// none comment
 			if( reason == undefined ){
@@ -335,7 +368,7 @@ jQuery.noConflict();
 			
 			// search channel id in array
 			var to_id = $.inArray( chname, ch );
-			console.log( "to_id: " + to_id );
+			//console.log( "to_id: " + to_id );
 			
 			prependChat( to_id, nick, 'leave the ch. ('+reason+')', message.command );
 			
@@ -351,14 +384,20 @@ jQuery.noConflict();
 		 */
 		chat.addListener('quit', function(nick, reason, channels, message) {
 			
+			// encoding
+			reason = Encoding.convert( reason, { to: 'UNICODE', from: encode });
+			
 			console.log( 'QUIT: ' + nick + '//' + reason );
-			console.log( message );
-			console.log( channels );
+			//console.log( message );
+			//console.log( channels );
 
 			// search channel id in array
 			$.each( channels, function( i, value ){
+				
+				value = Encoding.convert( value, { to: 'UTF8', from: 'AUTO' });
+				
 				var to_id = $.inArray( value, ch );
-				console.log( i + " >> to_id: " + to_id );
+				console.log( i + " QUIT >> value: " + value );
 				
 				prependChat( to_id, nick, 'leave the ch. ('+reason+')', message.command );
 			});
@@ -375,14 +414,20 @@ jQuery.noConflict();
 		chat.addListener('join', function( chname, nick, message ) {
 			
 			//encode
-			chname = textEncode( chname, encode );
+			chname = Encoding.convert( chname, { to: 'UNICODE', from: encode });
 			
-			console.log( 'JOIN: chname: ' + chname + ' // nick: ' + nick );
-			console.log( message );
+			console.log( '---- JOIN: chname: ' + chname + ' // nick: ' + nick );
+			//console.log( message );
 
 			// search channel id in array
 			var to_id = $.inArray( chname, ch );
-			console.log( "to_id: " + to_id );
+			console.log( "---- to_id: " + to_id );
+			// if non id, add channel.
+			if( to_id == -1 ){
+				ch.push( chname );
+				createMsg( ch.length-1, chname );
+				to_id = $.inArray( chname, ch );
+			}
 			
 			prependChat( to_id, nick, 'enter the ch. ('+message.user+'@'+message.host+')', message.command );
 			
@@ -394,22 +439,18 @@ jQuery.noConflict();
 		 * @param	text	object error
 		 */
 		chat.addListener('error', function(text) {
-
-			text = textEncode( text, encode );
-
-			console.log('ERROR: ', text);
-			
 			var command = 'ERROR';
 			var err_text = '';
 			
 			if( typeof text == 'object' ){
 				$.each( text.args, function( i, val ){
-					err_text += textDecode( val +' ', encode );
+					err_text += Encoding.convert( val+' ', { to: 'UNICODE', from: encode });
 				});
 			} else {
-				err_text = textDecode( text, encode );
+				err_text = Encoding.convert( text, { to: 'UNICODE', from: encode });
 			}
 			
+			console.log('!!! ERROR: ', err_text);
 			prependBacklog( 'Error', err_text, command );
 			
 		});
@@ -425,14 +466,14 @@ jQuery.noConflict();
 		 */
 		chat.addListener('+mode', function( chname, by, mode, target, message ) {
 
-			chname = textEncode( chname, encode );
+			chname = Encoding.convert( chname, { to: 'UNICODE', from: encode });
 
 			console.log('+MODE: chname: ' + chname + ' // by: ' + by + ' // mode: ' + mode + ' // target: ' + target );
-			console.log( message );
+			//console.log( message );
 			
 			// search channel id in array
 			var to_id = $.inArray( chname, ch );
-			console.log( "to_id: " + to_id );
+			//console.log( "to_id: " + to_id );
 			
 			// target undef is mode for channel
 			if( target == null ){
@@ -458,14 +499,14 @@ jQuery.noConflict();
 		 */
 		chat.addListener('-mode', function( chname, by, mode, target, message ) {
 
-			chname = textEncode( chname, encode );
+			chname = Encoding.convert( chname, { to: 'UNICODE', from: encode });
 		
 			console.log('-MODE: chname: ' + chname + ' // by: ' + by + ' // mode: ' + mode + ' // target: ' + target );
-			console.log( message );
+			//console.log( message );
 			
 			// search channel id in array
 			var to_id = $.inArray( chname, ch );
-			console.log( "to_id: " + to_id );
+			//console.log( "to_id: " + to_id );
 			
 			// target undef is mode for channel
 			if( target == null ){
@@ -488,7 +529,7 @@ jQuery.noConflict();
 		 */
 		chat.addListener('names', function ( chname, nicks ) {
 
-			chname = textEncode( chname, encode );
+			chname = Encoding.convert( chname, { to: 'UNICODE', from: encode });
 
 			console.log('NAMES: chname: ' + chname + '' );
 			console.log( nicks );
@@ -500,7 +541,7 @@ jQuery.noConflict();
 	
 			// search channel id in array
 			var to_id = $.inArray( chname, ch );
-			console.log( "to_id: " + to_id );
+			//console.log( "to_id: " + to_id );
 			
 			prependChat( to_id, 'Console', '<em>&lt;'+namesArry.join('&gt; &lt;')+'&gt;</em>' , 'NAMES' );
 		
@@ -517,11 +558,14 @@ jQuery.noConflict();
 		chat.addListener('nick', function ( oldnick, newnick, channels, message) {
 			
 			console.log( 'NICK: '+ oldnick +' >> '+ newnick +'' );
-			console.log( message );
-			console.log( channels );
+			//console.log( message );
+			//console.log( channels );
 
 			// search channel id in array
 			$.each( channels, function( i, value ){
+
+				value = Encoding.convert( value, { to: 'UNICODE', from: encode });
+
 				var to_id = $.inArray( value, ch );
 				console.log( i + " >> to_id: " + to_id );
 				
