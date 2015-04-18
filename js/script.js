@@ -3,6 +3,13 @@
  * @param	REGEX_HTTP	httpから始まる恋物語
  */
 const REGEX_HTTP = /((http|https|ftp):\/\/[\w?=&.\/-;#~%-]+(?![\w\s?&.\/;#~%"=-]*>))/g;
+// Sound initialize
+var pling = null;
+(function(){
+    pling = new Audio('');
+    pling.autoplay = false;
+    pling.src = '/sound/pling.mp3';
+})();
 
 
 /**
@@ -90,6 +97,41 @@ function textLinker( text, thumbnail ){
 	});
 	
 	return text;
+}
+
+
+/**
+ * 自分の nickname / username が呼ばれたら音を出す
+ * @param   text        string  keywords
+ */
+function keywordCheck( text ){
+    console.log('keywordCheck: '+text);
+
+    if( text.match( storageGet('nickname') ) || text.match( storageGet('username') ) ){
+        soundOutput('pling');
+        text = '<strong>'+ text +'</strong>';
+    }
+
+    return text;
+}
+
+
+/**
+ * なにか再生する labelの指示に合わせて
+ * @param   label       string  pop
+ */
+function soundOutput( label ){
+
+    switch( label ){
+        case 'pling':
+            pling.play();
+            break;
+        default:
+            return '<source src="/sound/pling.mp3" type="audio/mp3">';            
+            break;
+    }
+
+    return;
 }
 
 
@@ -222,7 +264,6 @@ jQuery.noConflict();
 			}
 			
 		});
-		
 		
 	});
 	

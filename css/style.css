@@ -363,3 +363,10 @@ button {
 	border-radius: 10px;
 }
 
+
+/**
+ * SoundEffect関連
+ */
+#sound {
+    visibility: hidden;
+}

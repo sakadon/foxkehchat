@@ -254,6 +254,7 @@ jQuery.noConflict();
 			// text encode for display
 			text = Encoding.convert( text, { to: 'UNICODE', from: encode });
 			text = escapeText( text );
+            text = keywordCheck( text );
 			to = Encoding.convert( to, { to: 'UNICODE', from: encode });
 
 			console.log('MESSAGE: ' + nick + ' => ' + to + ' // ' + text);
@@ -624,9 +625,6 @@ jQuery.noConflict();
 				
 			}
 		});
-	
-	
-
 	
 	});
 	
