@@ -13,7 +13,7 @@ for FirefoxOS 1.3~ late(たぶん)
 * URL auto link and, image URL auto display
 
 ## Links
-* [Firefox Marketplace Download](https://github.com/sakadon/foxkehchat/)
+* [Firefox Marketplace Download](https://marketplace.firefox.com/app/foxkeh-chat/)
 * [Official Website and Change logs](http://sakadon.net/foxkehchat/)
 
 ## Use libs
